@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 import datetime
 from django.conf import settings
 
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     'main',
     'rest_framework',
     'rest_framework_jwt',
+    'rest_framework.authtoken',
     'django_cron'
 ]
 
@@ -81,8 +83,12 @@ WSGI_APPLICATION = 'code_union.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_NAME'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': 'db',
+        'PORT': 5432,
     }
 }
 
@@ -110,9 +116,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ),
 }
 
@@ -147,7 +153,7 @@ JWT_AUTH = {
     'JWT_ALLOW_REFRESH': False,
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
 
-    'JWT_AUTH_HEADER_PREFIX': 'JWT',
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
     'JWT_AUTH_COOKIE': None,
 
 }
@@ -173,3 +179,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRON_CLASSES = [
+    'services.tasks.UpdateCurrencyRates',
+]
